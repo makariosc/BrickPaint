@@ -1,1 +1,2 @@
-# cells
+# BrickPaint
+Primitive painting program using Brick 
