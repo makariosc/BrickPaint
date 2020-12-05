@@ -7,8 +7,8 @@ newtype Board = Board
   }
 
 height, width :: Int
-height = 70
-width = 70
+height = 10
+width = 10
 
 step :: Board -> Board
 step = id

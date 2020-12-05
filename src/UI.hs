@@ -11,6 +11,7 @@ import Brick
     attrMap,
     attrName,
     continue,
+    customMain,
     defaultMain,
     hBox,
     neverShowCursor,
@@ -24,6 +25,7 @@ import Brick.Types as BT
 import Brick.Widgets.Border as B
 import Brick.Widgets.Border.Style as BS
 import Brick.Widgets.Center as C
+import Brick.Widgets.Core as WC
 import Control.Monad (void)
 import Graphics.Vty as V
 import Grid
@@ -43,7 +45,14 @@ app =
     }
 
 main :: IO ()
-main = void $ defaultMain app b
+main = do
+  let buildVty = do
+        v <- V.mkVty =<< V.standardIOConfig
+        V.setMode (V.outputIface v) V.Mouse True
+        return v
+
+  initialVty <- buildVty
+  void $ customMain initialVty buildVty Nothing app b
   where
     b = initBoard
 
@@ -54,10 +63,10 @@ drawBoard :: Board -> Widget Name
 drawBoard b =
   withBorderStyle BS.unicodeBold $
     B.borderWithLabel (str "Board") $
-      vBox rows
+      clickable () $ vBox rows
   where
     rows = [hBox $ cellsInRow r | r <- [height - 1, height - 2 .. 0]]
-    cellsInRow y = [drawCoord (BT.Location (x `div` 10, y `div` 10)) | x <- [0 .. width - 1]]
+    cellsInRow y = [drawCoord (BT.Location (x, y)) | x <- [0 .. width - 1]]
     drawCoord = drawCell . cellAt
     cellAt c
       | c `elem` occupied b = True
@@ -81,5 +90,11 @@ aMap =
     [(filled, V.blue `on` V.blue)]
 
 handleEvent :: Board -> BrickEvent Name Tick -> EventM Name (Next Board)
-handleEvent b (MouseDown _ BLeft _ l) = continue $ mark l b
-handleEvent b _ = continue $ mark (Location (5, 5)) b
+--handleEvent b (VtyEvent (EvMouseDown col row _ _)) = continue $ mark (Location (col, row)) b
+handleEvent b (MouseDown _ _ _ l) = continue $ mark (fixLocation l) b
+handleEvent b _ = continue b
+
+--handleEvent b _ = continue $ mark (Location (0, 0)) b
+
+fixLocation :: Location -> Location
+fixLocation (Location (x, y)) = Location (x `div` 2, 9 - y)
