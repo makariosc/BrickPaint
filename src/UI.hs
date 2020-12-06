@@ -78,7 +78,11 @@ drawCell True = withAttr filled cw
 drawCell False = withAttr unfilled cw
 
 cw :: Widget Name
-cw = str "  "
+cw =
+  str
+    " ---- \n\
+    \|    |\n\
+    \ ----"
 
 filled, unfilled :: AttrName
 filled = attrName "filled"
