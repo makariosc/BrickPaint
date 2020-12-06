@@ -14,6 +14,7 @@ import Brick
     customMain,
     defaultMain,
     hBox,
+    halt,
     neverShowCursor,
     on,
     str,
@@ -91,10 +92,9 @@ aMap =
 
 handleEvent :: Board -> BrickEvent Name Tick -> EventM Name (Next Board)
 --handleEvent b (VtyEvent (EvMouseDown col row _ _)) = continue $ mark (Location (col, row)) b
-handleEvent b (MouseDown _ _ _ l) = continue $ mark (fixLocation l) b
+handleEvent b (MouseUp _ (Just BLeft) l) = continue $ mark l b
+handleEvent b (MouseUp _ (Just BRight) l) = continue $ unmark l b
+handleEvent b (VtyEvent (V.EvKey (V.KChar 'q') [])) = halt b
 handleEvent b _ = continue b
 
 --handleEvent b _ = continue $ mark (Location (0, 0)) b
-
-fixLocation :: Location -> Location
-fixLocation (Location (x, y)) = Location (x `div` 2, 9 - y)
